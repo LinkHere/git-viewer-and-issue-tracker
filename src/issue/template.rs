@@ -1,5 +1,17 @@
-use super::model::RepoIssues;
+use super::model::{IssueWithComments, RepoIssues};
 use maud::{Markup, html};
+
+pub fn list_issue_with_comments_mrkp(comments: &[IssueWithComments]) -> Markup {
+	html! {
+		@if comments.is_empty() {
+			p { "No Comments Yet!" }
+		} @else {
+			@for comment in comments {
+				p { (comment.comment_body) }
+			}
+		}
+	}
+}
 
 pub fn list_repo_issues_mrkp(repo_name: &str, issues: &[RepoIssues]) -> Markup {
     html! {

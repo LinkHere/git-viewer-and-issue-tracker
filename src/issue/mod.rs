@@ -14,4 +14,5 @@ pub fn routes() -> Router<AppState> {
         .route("/{id}", get(handler::list_repo_issues_handler))
         .route("/{id}/new", get(handler::new_repo_issues_handler))
         .route("/{id}/issues", post(handler::insert_repo_issues_handler))
+		.route("/issue/{id}", get(handler::list_issue_with_comments_handler))
 }
