@@ -1,6 +1,13 @@
-use super::model::{NewIssue, RepoIssues};
+use super::model::{NewIssue, RepoIssues, IssueWithComments};
 use crate::error::AppError;
 use sqlx::SqlitePool;
+
+pub async fn issue_with_comments(
+    pool: &SqlitePool,
+    valid_id: i64
+) -> Result<Vec<IssueWithComments>, AppError> {
+    sqlx::query_as!()
+}
 
 pub async fn list(pool: &SqlitePool, valid_id: i64) -> Result<(String, Vec<RepoIssues>), AppError> {
     let repo_name = sqlx::query_scalar!("SELECT name FROM repos WHERE id = ?", valid_id)
