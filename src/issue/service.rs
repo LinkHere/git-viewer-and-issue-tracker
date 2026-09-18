@@ -1,37 +1,35 @@
-use super::model::{NewIssue, RepoIssues, IssueWithComments};
+use super::model::{NewIssue, RepoIssues as ListIssue};
 use crate::error::AppError;
 use sqlx::SqlitePool;
 
-pub async fn list_issue_with_comments(
+pub async fn get_issue_with_comments(
     pool: &SqlitePool,
     valid_id: i64
-) -> Result<Vec<IssueWithComments>, AppError> {
-    let issue_with_comments = sqlx::query_as!(
-		IssueWithComments,
+) -> Result<Vec<ListIssue>, AppError> {
+    let issue  = sqlx::query_as!(
+		ListIssue,
 		r#"
 		SELECT
-			i.title AS issue_title,
-			i.body AS issue_body,
-			i.status AS issue_status,
-			i.created_at AS issue_created_at,
-			i.updated_at AS issue_updated_at,
-			c.body AS comment_body,
-			c.created_at AS comment_created_at
+			title
+			body
+			status
+			created_at
+			updated_at
 		FROM
-			issues i
-		INNER JOIN
-			comments c ON i.id = c.issue_id
+			issues
 		WHERE
-			i.id = ?
+			id = ?
 		"#,
 		valid_id
 	)
-	.fetch_all(pool)
-    .await?;
-	Ok(issue_with_comments)
+	.fetch_optional(pool)
+    .await?
+    .ok_or(AppError::NotFound)?;
+
+	Ok(issue)
 }
 
-pub async fn list(pool: &SqlitePool, valid_id: i64) -> Result<(String, Vec<RepoIssues>), AppError> {
+pub async fn get_repo_issues(pool: &SqlitePool, valid_id: i64) -> Result<(String, Vec<RepoIssues>), AppError> {
     let repo_name = sqlx::query_scalar!("SELECT name FROM repos WHERE id = ?", valid_id)
         .fetch_optional(pool)
         .await?
