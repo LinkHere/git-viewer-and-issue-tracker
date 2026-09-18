@@ -1,6 +1,6 @@
 use super::model::NewIssue;
-use super::service::{insert, list, list_issue_with_comments, check_repo_exists};
-use super::template::{list_repo_issues_mrkp, list_issue_with_comments_mrkp, new_repo_issues_mrkp};
+use super::service::{insert, get_repo_issues, get_issue_with_comments, check_repo_exists};
+use super::template::{list_repo_issues_mrkp, render_issue_with_comments_mrkp, new_repo_issues_mrkp};
 use crate::common::{helpers::validate_url_id, html_layout::layout};
 use crate::error::AppError;
 use crate::states::AppState;
@@ -14,13 +14,15 @@ use maud::Markup;
 
 pub async fn list_issue_with_comments_handler(
 	State(state): State<AppState>,
-	id: Result<Path<i64>, PathRejection>
+	path: Result<Path<(i64, i64)>, PathRejection>
 ) -> Result<Markup, AppError> {
-	let valid_id = validate_url_id(id)?;
-	let issue_with_comments = list_issue_with_comments(&state.pool, valid_id).await?;
+	let Path((repo_id, issue_id)) = path?;
+	let repo_valid_id = validate_url_id(Ok(Path(repo_id)))?;
+	let issue_valid_id = validate_url_id(Ok(Path(issue_id)))?;
+	let (repo_name, issue) = get_issue_with_comments(&state.pool, (repo_valid_id, issue_valid_id)).await?;
 	Ok(layout(
 		"Issue - Comments",
-		list_issue_with_comments_mrkp(&issue_with_comments)
+		render_issue_with_comments_mrkp(repo_name, &issue)
 	))
 }
 
@@ -29,7 +31,7 @@ pub async fn list_repo_issues_handler(
     State(state): State<AppState>,
 ) -> Result<Markup, AppError> {
     let valid_id = validate_url_id(id)?;
-    let (repo_name, issues) = list(&state.pool, valid_id).await?;
+    let (repo_name, issues) = get_repo_issues(&state.pool, valid_id).await?;
     Ok(layout(
         "Repository Issues",
         list_repo_issues_mrkp(&repo_name, &issues),
