@@ -1,7 +1,7 @@
 use super::model::{NewIssue, RepoIssues as ListIssue, RepoIssues};
 use crate::error::AppError;
 use crate::common::types;
-use crate::repo;
+use crate::repositories;
 use sqlx::SqlitePool;
 
 pub async fn get_issue_with_comments(
@@ -10,9 +10,9 @@ pub async fn get_issue_with_comments(
 ) -> Result<(String, ListIssue), AppError> {
     let repo_query = sqlx::query_scalar!(
         "SELECT
-			name
+			repo_name
 		FROM
-			repos
+			repositories
 		WHERE
 			id = ?
 		",
@@ -55,7 +55,7 @@ pub async fn get_repo_issues(
     pool: &SqlitePool,
     valid_id: i64,
 ) -> Result<(types::RepoIdName, Vec<RepoIssues>), AppError> {
-    let repo_query = repo::service::get_repo_id_name(pool, valid_id);
+    let repo_query = repositories::service::get_repo_id_name(pool, valid_id);
 
     let issues_query = sqlx::query_as!(
         RepoIssues,
@@ -101,7 +101,7 @@ pub async fn insert(repo_id: i64, pool: &SqlitePool, payload: NewIssue) -> Resul
 pub async fn check_repo_exists(valid_id: i64, pool: &SqlitePool) -> Result<i64, AppError> {
     Ok(sqlx::query_scalar!(
         r#"
-        SELECT id FROM repos
+        SELECT id FROM repositories
         WHERE id = ?
         "#,
         valid_id

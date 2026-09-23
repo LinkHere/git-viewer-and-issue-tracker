@@ -12,6 +12,7 @@ use axum::{
 
 pub fn routes() -> Router<AppState> {
     Router::new()
-        .route("/", get(handler::new_repo_handler))
-        .route("/new", post(handler::create_repo_init_handler))
+		.route("/", get(handler::list_all_repos_handler))
+        .route("/repo/new", get(handler::new_repo_handler))
+        .route("/repo/new", post(handler::create_repo_init_handler))
 }

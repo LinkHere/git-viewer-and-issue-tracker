@@ -6,7 +6,6 @@ mod common;
 mod db;
 mod error;
 mod issue;
-mod repo;
 mod repositories;
 mod states;
 
@@ -22,7 +21,6 @@ async fn main() -> Result<()> {
     let static_service = ServeDir::new("static");
     let app = Router::new()
         .merge(repositories::routes())
-        .nest("/repos", repo::routes())
         .nest("/repo", issue::routes())
         .nest_service("/static", static_service)
         .fallback(fallback)

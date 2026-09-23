@@ -3,22 +3,21 @@ CREATE TABLE IF NOT EXISTS repositories (
     id INTEGER PRIMARY KEY,
     repo_name TEXT NOT NULL UNIQUE,
     repo_description TEXT,
-    repo_path TEXT NOT NULL UNIQUE,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE TABLE IF NOT EXISTS repos(
-  id INTEGER PRIMARY KEY,
-  name TEXT NOT NULL,
-  cgit_url TEXT NOT NULL,
-  description TEXT,
-  created_at TEXT NOT NULL DEFAULT (datetime('now'))
-);
+--CREATE TABLE IF NOT EXISTS repos(
+ -- id INTEGER PRIMARY KEY,
+ -- name TEXT NOT NULL,
+ -- cgit_url TEXT NOT NULL,
+ -- description TEXT,
+ -- created_at TEXT NOT NULL DEFAULT (datetime('now'))
+--);
 
 CREATE TABLE IF NOT EXISTS issues(
   id INTEGER PRIMARY KEY,
-  repo_id INTEGER NOT NULL REFERENCES repos(id) ON DELETE CASCADE,
+  repo_id INTEGER NOT NULL REFERENCES repositories(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   body TEXT NOT NULL,
   status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','closed')),

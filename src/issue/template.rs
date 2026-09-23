@@ -17,7 +17,7 @@ pub fn render_issue_with_comments_mrkp(repo_name: String, issue: &ListIssue) -> 
 
 pub fn list_repo_issues_mrkp(repo: types::RepoIdName, issues: &[RepoIssues]) -> Markup {
     html! {
-        h2 { "Issues: " (repo.name) }
+        h2 { "Issues: " (repo.repo_name) }
 
         @if issues.is_empty() {
             p { "No issues on this repository yet!" }
