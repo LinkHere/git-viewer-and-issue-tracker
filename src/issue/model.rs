@@ -2,6 +2,7 @@ use serde::Deserialize;
 
 #[derive(Debug)]
 pub struct RepoIssues {
+    pub id: i64,
     pub title: String,
     pub body: String,
     pub status: String,
@@ -14,4 +15,3 @@ pub struct NewIssue {
     pub title: String,
     pub body: String,
 }
-

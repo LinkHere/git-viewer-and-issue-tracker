@@ -7,6 +7,8 @@ use maud::{DOCTYPE, Markup, html};
 #[derive(Debug)]
 pub enum AppError {
     NotFound,
+    BadRequest(String),
+    Conflict(String),
     Internal(anyhow::Error),
 }
 
@@ -25,14 +27,20 @@ impl IntoResponse for AppError {
             AppError::NotFound => (
                 StatusCode::NOT_FOUND,
                 "404 Not Found",
-                "The requested page or resource could not be found.",
+                "The requested page or resource could not be found.".to_string(),
             ),
+            AppError::BadRequest(msg) => {
+                (StatusCode::BAD_REQUEST, "400 Bad Request", msg)
+            }
+            AppError::Conflict(msg) => {
+                (StatusCode::CONFLICT, "409 Conflict", msg)
+            }
             AppError::Internal(err) => {
                 eprintln!("Internal server error: {err:?}");
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "500 Internal Server Error",
-                    "An unexpected error occurred.",
+                    "An unexpected error occurred.".to_string(),
                 )
             }
         };

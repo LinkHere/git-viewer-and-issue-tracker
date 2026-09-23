@@ -1,4 +1,13 @@
 -- Add migration script here
+CREATE TABLE IF NOT EXISTS repositories (
+    id INTEGER PRIMARY KEY,
+    repo_name TEXT NOT NULL UNIQUE,
+    repo_description TEXT,
+    repo_path TEXT NOT NULL UNIQUE,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS repos(
   id INTEGER PRIMARY KEY,
   name TEXT NOT NULL,

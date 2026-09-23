@@ -7,6 +7,7 @@ mod db;
 mod error;
 mod issue;
 mod repo;
+mod repositories;
 mod states;
 
 use db::init_db;
@@ -20,6 +21,7 @@ async fn main() -> Result<()> {
     let state = AppState { pool };
     let static_service = ServeDir::new("static");
     let app = Router::new()
+        .merge(repositories::routes())
         .nest("/repos", repo::routes())
         .nest("/repo", issue::routes())
         .nest_service("/static", static_service)

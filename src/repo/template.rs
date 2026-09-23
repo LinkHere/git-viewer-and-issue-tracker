@@ -40,6 +40,11 @@ pub fn list_repo_mrkp(repos: &[Repo]) -> Markup {
                             }
                         }
                     }
+                    tfoot {
+                        div {
+                            a href="/repos/new" role="button" { "Create New Repository" }
+                        }
+                    }
                 }
             }
         }

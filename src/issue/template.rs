@@ -1,24 +1,23 @@
 use super::model::{RepoIssues as ListIssue, RepoIssues};
+use crate::common::types;
 use maud::{Markup, html};
 
 pub fn render_issue_with_comments_mrkp(repo_name: String, issue: &ListIssue) -> Markup {
-	html! {
-		@if repo_name.is_empty() {
-			h2 { (repo_name) }
-			hr;
-			p { "No Comments Yet!" }
-		} @else {
-			h2 { (repo_name) }
-			hr;
-			h3 { (issue.title) }
-			p { (issue.body) }
-		}
-	}
+    html! {
+        h2 { (repo_name) }
+        hr;
+        @if issue.title.is_empty() && issue.body.is_empty() {
+            p { "No Comments Yet!" }
+        } @else {
+            h3 { (issue.title) }
+            p { (issue.body) }
+        }
+    }
 }
 
-pub fn list_repo_issues_mrkp(repo_name: &str, issues: &[RepoIssues]) -> Markup {
+pub fn list_repo_issues_mrkp(repo: types::RepoIdName, issues: &[RepoIssues]) -> Markup {
     html! {
-        h2 { "Issues: " (repo_name) }
+        h2 { "Issues: " (repo.name) }
 
         @if issues.is_empty() {
             p { "No issues on this repository yet!" }
@@ -37,7 +36,7 @@ pub fn list_repo_issues_mrkp(repo_name: &str, issues: &[RepoIssues]) -> Markup {
                     tbody {
                         @for issue in issues {
                             tr {
-                                td { strong { (issue.title) } }
+                                td { strong { a href={ "/repo/"(repo.id)"/issue/"(issue.id) } { (issue.title) } } }
                                 td { (issue.body) }
                                 td {
                                     code { (issue.status) }
