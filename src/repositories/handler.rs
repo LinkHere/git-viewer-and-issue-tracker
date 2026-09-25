@@ -1,3 +1,4 @@
+use super::helper;
 use super::model::NewRepo;
 use super::service::{fetch_all_repos, insert_repo, is_repo_exists};
 use super::template::{render_all_repos_mrkp, render_new_repo_mrkp};
@@ -55,8 +56,10 @@ pub async fn create_repo_init_handler(
             Err(e) => return Err(e.into()),
         }
 
-        gix::init_bare(&repo_pathbuf).map_err(|e| {
-            let _ = std::fs::remove_dir_all(&repo_pathbuf);
+        helper::init_bare_repo(&repo_pathbuf).map_err(|e| {
+            if let Err(e) = std::fs::remove_dir_all(&repo_pathbuf){
+                eprint!("{e}");
+            }
             e
         })?;
 
