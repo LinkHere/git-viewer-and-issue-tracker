@@ -1,12 +1,12 @@
 use super::model::FetchRepos;
+use chrono::{ DateTime,Utc };
 use maud::{ html, Markup };
 
 pub fn render_all_repos_mrkp(
-    repos: &[FetchRepos],
-    timestamp: &str
+    repo_with_dt: &[(FetchRepos, Option<DateTime<Utc>>)],
 ) -> Markup {
 	html! {
-        @if repos.is_empty() {
+        @if repo_with_dt.is_empty() {
             p { "No repositories available yet." }
             hr;
             div style="max-width: 200px; margin-top: 2px;"{
@@ -16,17 +16,18 @@ pub fn render_all_repos_mrkp(
             div style="max-width: 200px;"{
                 a href="/repo/new" role="button" { "Create New Repository" }
             }
-            div style="overflow-x: auto;" {
+            div {
                 table {
                     thead {
                         tr {
                             th { "Name" }
                             th { "Description" }
                             th { "Created" }
+                            th { "Last Activity" }
                         }
                     }
                     tbody {
-                        @for repo in repos {
+                        @for (repo, dt) in repo_with_dt {
                             tr {
                                 td {
                                     strong {
@@ -41,7 +42,14 @@ pub fn render_all_repos_mrkp(
                                     }
                                 }
                                 td {
-                                    small { (repo.created_at)"|"(timestamp) }
+                                    small { (repo.created_at) }
+                                }
+                                td {
+                                    @if let Some(last_dt_updated) = dt {
+                                        small { (last_dt_updated) }
+                                    } @else {
+                                        small { (repo.created_at) }
+                                    }
                                 }
                             }
                         }
