@@ -7,11 +7,10 @@ pub fn layout(page_title: &str, page_content: Markup) -> Markup {
             head {
                 meta charset="utf-8";
                 meta name="viewport" content="width=device-width, initial-scale=1";
-                meta name="color-scheme" content="light dark";
-                link rel="stylesheet" href="/static/pico.fluid.classless.css";
+                link rel="stylesheet" href="/static/self.css";
                 title { (page_title) " | Issue Tracker" }
             }
-            body {
+            body class="page-layout" {
                 header {
                     nav {
                         ul {
@@ -25,7 +24,7 @@ pub fn layout(page_title: &str, page_content: Markup) -> Markup {
                     }
                 }
 
-                main {
+                main class="centered-content" {
                     (page_content)
                 }
 

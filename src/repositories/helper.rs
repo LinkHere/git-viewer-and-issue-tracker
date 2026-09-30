@@ -1,10 +1,11 @@
 use anyhow::Result;
+use chrono::{DateTime,Utc};
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
-use std::path::PathBuf;
+use std::path::Path;
 use crate::error::AppError;
 
-fn write_agefile(repo_pathbuf: &PathBuf) -> Result<(), AppError> {
+fn write_agefile(repo_pathbuf: &Path) -> Result<(), AppError> {
     let web_dir = repo_pathbuf.join("info").join("web");
     fs::create_dir_all(&web_dir)?;
     let time_now = chrono::Utc::now().to_rfc3339();
@@ -12,7 +13,7 @@ fn write_agefile(repo_pathbuf: &PathBuf) -> Result<(), AppError> {
     Ok(())
 }
 
-fn write_post_receive_hook(repo_pathbuf: &PathBuf) -> Result<(), AppError> {
+fn write_post_receive_hook(repo_pathbuf: &Path) -> Result<(), AppError> {
     let hook_path = repo_pathbuf.join("hooks").join("post-receive");
     let hook_script = "#!/bin/sh\n\
         mkdir -p info/web\n\
@@ -24,9 +25,24 @@ fn write_post_receive_hook(repo_pathbuf: &PathBuf) -> Result<(), AppError> {
     Ok(())
 }
 
-pub fn init_bare_repo(repo_pathbuf: &PathBuf) -> Result<(), AppError> {
+pub fn init_bare_repo(repo_pathbuf: &Path) -> Result<(), AppError> {
     gix::init_bare(repo_pathbuf)?;
     write_agefile(repo_pathbuf)?;
     write_post_receive_hook(repo_pathbuf)?;
     Ok(())
+}
+
+pub fn read_repo_last_updated(path: &Path) -> Option<DateTime<Utc>> {
+
+    let time_content = match fs::read_to_string(path) {
+	    Ok(tc) => tc,
+        Err(e) => {
+            eprintln!("Can't read file, Error: {}", e.to_string());
+            return None;
+        }
+    };
+
+    DateTime::parse_from_rfc3339(time_content.trim())
+	    .ok()
+    	.map(Into::into)
 }
