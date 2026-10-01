@@ -1,16 +1,36 @@
+use super::browse::show_repo_root;
 use super::helper;
 use super::model::NewRepo;
-use super::service::{fetch_all_repos, insert_repo, is_repo_exists};
+use super::service::{check_repo_id, fetch_all_repos, insert_repo, is_repo_exists};
 use super::template::{render_all_repos_mrkp, render_new_repo_mrkp};
+use crate::common::helpers::validate_url_id;
 use crate::common::html_layout::layout;
 use crate::error::AppError;
 use crate::states::AppState;
 use axum::Form;
-use axum::extract::State;
+use axum::extract::rejection::PathRejection;
+use axum::extract::{Path, State};
 use axum::response::Redirect;
 use maud::Markup;
 use std;
 use std::sync::Arc;
+
+pub async fn list_repo_files_handler(
+    State(state): State<AppState>,
+    id: Result<Path<i64>, PathRejection>
+) -> Result<(), AppError> {
+    let valid_id = validate_url_id(id)?;
+    let repo_name = check_repo_id(&state.pool, valid_id).await?;
+    let repo_path = state.repo_path.join(&repo_name);
+    let items = tokio::task::spawn_blocking(move || {
+        let repo = state.repo(&repo_path)?;
+        show_repo_root(&repo)
+    })
+    .await?;
+    println!("{:?}", items);
+    Ok(())
+}
+
 
 //#[axum::debug_handler]
 pub async fn list_all_repos_handler(

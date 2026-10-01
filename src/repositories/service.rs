@@ -60,3 +60,14 @@ pub async fn is_repo_exists(
 
     Ok(exists > 0)
 }
+
+pub async fn check_repo_id(
+    pool: &SqlitePool,
+    id: i64
+) -> Result<String, AppError> {
+    let repo_name = sqlx::query_scalar!("SELECT repo_name FROM repositories WHERE id = ?", id)
+        .fetch_optional(pool)
+        .await?
+        .ok_or(AppError::NotFound)?;
+    Ok(repo_name)
+}
