@@ -20,8 +20,8 @@ use states::AppState;
 async fn main() -> Result<()> {
     let pool = init_db().await?;
     let repo_path = Arc::from(Path::new("./repositories"));
-    let _ = std::fs::create_dir_all(&repo_path);
-    let state = AppState { pool, repo_path };
+    std::fs::create_dir_all(&repo_path)?;
+    let state = AppState::new(pool, repo_path);
     let static_service = ServeDir::new("static");
     let app = Router::new()
         .merge(repositories::routes())

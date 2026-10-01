@@ -10,6 +10,7 @@ use axum::extract::State;
 use axum::response::Redirect;
 use maud::Markup;
 use std;
+use std::sync::Arc;
 
 //#[axum::debug_handler]
 pub async fn list_all_repos_handler(
@@ -17,30 +18,26 @@ pub async fn list_all_repos_handler(
 ) -> Result<Markup, AppError> {
 
     let repos = fetch_all_repos(&state.pool).await?;
-    let repo_path = state.repo_path.clone();
+    let repo_path = Arc::clone(&state.repo_path);
 
-    let repo_with_dt = tokio::task::spawn_blocking(move || {
-        let mut records = Vec::with_capacity(repos.len());
-        for repo in repos {
-            let mut full_repo_path = repo_path.to_path_buf();
-            
-            full_repo_path.push(&repo.repo_name);
-            full_repo_path.push("info/web/last-modified.txt");
-            
-            println!("Full Repo Path: {:?}", full_repo_path);
-            
-            let dt = helper::read_repo_last_updated(&full_repo_path);
-            records.push((repo, dt));
-        }
-        println!("To be feed on render_all_repos_markup: {:?}", records);
-        records
+    let repo_with_dt: Vec<_> = tokio::task::spawn_blocking(move || {
+        let mut path = repo_path.to_path_buf();
+        path.reserve(96);
+        
+        repos
+            .into_iter()
+            .map(|repo| {
+                path.push(&repo.repo_name);
+                path.push("info/web/last-modified.txt");
+                let dt = helper::read_repo_last_updated(&path);
+                for _ in 0..4 {
+                    path.pop();
+                }
+                (repo, dt)
+            })
+            .collect()
     }).await?;
 
-    /*let repo_refs: Vec<(&FetchRepos, Option<DateTime<Utc>>)> = repo_with_dt
-        .iter()
-        .map(|(repo, dt)| (repo, *dt))
-        .collect();
-    */
     Ok(
         layout("Repositories", render_all_repos_mrkp(&repo_with_dt))
     )
