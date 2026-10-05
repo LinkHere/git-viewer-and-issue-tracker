@@ -1,6 +1,5 @@
 use anyhow::Result;
 use axum::Router;
-use std::sync::Arc;
 use std::path::Path;
 use tower_http::services::ServeDir;
 
@@ -19,7 +18,7 @@ use states::AppState;
 #[tokio::main]
 async fn main() -> Result<()> {
     let pool = init_db().await?;
-    let repo_path = Arc::from(Path::new("./repositories"));
+    let repo_path = Path::new("./repositories");
     std::fs::create_dir_all(&repo_path)?;
     let state = AppState::new(pool, repo_path);
     let static_service = ServeDir::new("static");

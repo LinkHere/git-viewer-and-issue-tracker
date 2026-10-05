@@ -1,6 +1,23 @@
+use super::browse::RepoContent;
 use super::model::FetchRepos;
 use chrono::{ DateTime,Utc };
 use maud::{ html, Markup };
+
+pub fn render_repo_files_mrkp(repo_entry: RepoContent) -> Markup {
+    html! {
+        @match repo_entry {
+            RepoContent::NoCommits => p { "No Commits Yet!" },
+            RepoContent::Empty => p { "Empty Repository" },
+            RepoContent::Files(entries) => {
+                ul {
+                    @for entry in entries {
+                        li { (entry.entry_name) "--" small { (entry.is_dir) } }
+                    }
+                }
+            },
+        }        
+    }
+}
 
 pub fn render_all_repos_mrkp(
     repo_with_dt: &[(FetchRepos, Option<DateTime<Utc>>)],
@@ -31,7 +48,7 @@ pub fn render_all_repos_mrkp(
                             tr {
                                 td {
                                     strong {
-                                        a href={ "/repo/" (repo.id) } { (repo.repo_name) }
+                                        a href={ "/" (repo.id) } { (repo.repo_name) }
                                     }
                                 }
                                 td {

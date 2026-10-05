@@ -75,7 +75,7 @@ nav ul li a:hover {
   flex-direction: column;
   gap: 16px;
   width: 100%;             
-  max-width: 600px;            /* Ideal sizing profile on large screens */
+  max-width: 800px;            /* Ideal sizing profile on large screens */
   /*background: #ffffff;     
   padding: 32px;
   border: 1px solid #d0d7de;
