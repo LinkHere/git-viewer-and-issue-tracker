@@ -73,8 +73,20 @@ impl From<gix::objs::decode::Error> for AppError {
     }
 }
 
+impl From<gix::objs::find::existing::Error> for AppError {
+    fn from(err: gix::objs::find::existing::Error) -> Self {
+        Self::Internal(anyhow::Error::from(err))
+    }
+}
+
 impl From<gix::object::commit::Error> for AppError {
     fn from(err: gix::object::commit::Error) -> Self {
+        Self::Internal(anyhow::Error::from(err))
+    }
+}
+
+impl From<gix::object::try_into::Error> for AppError {
+    fn from(err: gix::object::try_into::Error) -> Self {
         Self::Internal(anyhow::Error::from(err))
     }
 }

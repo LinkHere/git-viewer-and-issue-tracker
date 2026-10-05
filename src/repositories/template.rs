@@ -11,7 +11,11 @@ pub fn render_repo_files_mrkp(repo_entry: RepoContent) -> Markup {
             RepoContent::Files(entries) => {
                 ul {
                     @for entry in entries {
-                        li { (entry.entry_name) "--" small { (entry.is_dir) } }
+                        @if entry.is_dir {
+                            li { a href={ "/tree/"(entry.entry_name) } {(entry.entry_name)} "----" small { (entry.is_dir) } }
+                        } @else {
+                            li { a href={ "/blob/"(entry.entry_name) } {(entry.entry_name)} "----" small { (entry.is_dir) } }
+                        }
                     }
                 }
             },
