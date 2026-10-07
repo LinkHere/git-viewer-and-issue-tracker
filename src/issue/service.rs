@@ -1,6 +1,6 @@
 use super::model::{NewIssue, RepoIssues as ListIssue, RepoIssues};
-use crate::error::AppError;
 use crate::common::types;
+use crate::error::AppError;
 use crate::repositories;
 use sqlx::SqlitePool;
 

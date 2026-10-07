@@ -2,14 +2,14 @@ use crate::error::AppError;
 use axum::extract::FromRef;
 use dashmap::DashMap;
 use sqlx::SqlitePool;
-use std::path::{Path,PathBuf};
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 #[derive(Clone, FromRef)]
 pub struct AppState {
     pub pool: SqlitePool,
     pub repo_path: Arc<Path>,
-    pub repo_cache: Arc<DashMap<PathBuf, gix::ThreadSafeRepository>>
+    pub repo_cache: Arc<DashMap<PathBuf, gix::ThreadSafeRepository>>,
 }
 
 impl AppState {

@@ -1,9 +1,9 @@
+use crate::error::AppError;
 use anyhow::Result;
-use chrono::{DateTime,Utc};
+use chrono::{DateTime, Utc};
 use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
-use crate::error::AppError;
 
 fn write_agefile(repo_pathbuf: &Path) -> Result<(), AppError> {
     let web_dir = repo_pathbuf.join("info").join("web");
@@ -33,9 +33,8 @@ pub fn init_bare_repo(repo_pathbuf: &Path) -> Result<(), AppError> {
 }
 
 pub fn read_repo_last_updated(path: &Path) -> Option<DateTime<Utc>> {
-
     let time_content = match fs::read_to_string(path) {
-	    Ok(tc) => tc,
+        Ok(tc) => tc,
         Err(e) => {
             eprintln!("Can't read file, Error: {}", e.to_string());
             return None;
@@ -43,6 +42,6 @@ pub fn read_repo_last_updated(path: &Path) -> Option<DateTime<Utc>> {
     };
 
     DateTime::parse_from_rfc3339(time_content.trim())
-	    .ok()
-    	.map(Into::into)
+        .ok()
+        .map(Into::into)
 }

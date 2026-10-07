@@ -1,7 +1,6 @@
 use super::model::{RepoEntry, RepoSubtree};
 use crate::error::AppError;
 use anyhow::Result;
-use gix::traverse::tree::Recorder;
 
 #[derive(Debug)]
 pub enum RepoContent {
@@ -10,7 +9,32 @@ pub enum RepoContent {
     Files(Vec<RepoEntry>),
 }
 
-pub fn fetch_repo_tree(
+pub fn read_blob(repo: &gix::Repository, path: &str) -> Result<String, AppError> {
+    let tree_path = path.trim_matches('/');
+    if tree_path.is_empty() {
+        return Err(AppError::NotFound);
+    }
+
+    let commit = match repo.head_commit() {
+        Ok(commit) => commit,
+        Err(_) => return Err(AppError::NotFound),
+    };
+    let root_tree = commit.tree()?;
+
+    let blob_contents = if let Some(entry) = root_tree.lookup_entry_by_path(tree_path)? {
+        if entry.mode().is_blob() {
+            let blob = repo.find_blob(entry.oid()).unwrap();
+            String::from_utf8_lossy(&blob.data).into_owned()
+        } else {
+            return Err(AppError::NotFound);
+        }
+    } else {
+        return Err(AppError::NotFound);
+    };
+    Ok(blob_contents)
+}
+
+pub fn fetch_repo_subtree(
     repo: &gix::Repository,
     path: &str,
 ) -> Result<Vec<RepoSubtree>, AppError> {
@@ -37,7 +61,6 @@ pub fn fetch_repo_tree(
     };
 
     let mut files = Vec::new();
-
     for entry in target_tree.iter() {
         let entry = entry?;
         let filename = entry.filename().to_string();
@@ -48,35 +71,25 @@ pub fn fetch_repo_tree(
             is_dir: entry.mode().is_tree(),
         });
     }
-
-    Ok(files)    
+    println!("BASE PATH: {}", path);
+    Ok(files)
 }
 
-pub fn show_repo_root(
-    repo: &gix::Repository,
-) -> Result<RepoContent, AppError> {
-
+pub fn show_repo_root(repo: &gix::Repository) -> Result<RepoContent, AppError> {
     let commit = match repo.head_commit() {
         Ok(commit) => commit,
-        Err(_) => {
-            return Ok(RepoContent::NoCommits)
-        }
+        Err(_) => return Ok(RepoContent::NoCommits),
     };
     let tree = commit.tree()?;
     let mut files = Vec::new();
 
     for entry in tree.iter() {
         let entry = entry?;
-        let filename = entry.filename().to_string();
-        /*let full_file_path = if tree_path.is_empty() {
-            filename.clone()
-        } else {
-            format!("{}/{}", tree_path, filename)
-        };*/
 
-        files.push(RepoEntry{
+        files.push(RepoEntry {
             entry_name: entry.filename().to_string(),
             is_dir: entry.mode().is_tree(),
+            is_blob: entry.mode().is_blob(),
         })
     }
 
@@ -87,33 +100,15 @@ pub fn show_repo_root(
     }
 }
 
-pub fn show_repo_recursively(repo: &gix::Repository) -> Result<Recorder, AppError> {
-    let tree = repo.head_commit().unwrap().tree().unwrap();
-    let mut recorder = Recorder::default();
-    tree.traverse().breadthfirst(&mut recorder).unwrap();
-    Ok(recorder)
-}
-
 #[cfg(test)]
-mod tests{
+mod tests {
     use super::*;
 
     #[test]
-    fn list_repo_files_recursively() {
+    fn read_blob_handler() {
         let repo = gix::open("./repositories/my-super-linux").unwrap();
-        let recorder = show_repo_recursively(&repo).unwrap();
-        for entry in recorder.records {
-            println!("{:?} {} {}", entry.mode.kind(), entry.oid, entry.filepath);
-        }
+        let content = read_blob(&repo, "output.txt").unwrap();
+        println!("Blob Contents: {content}");
+        assert!(!content.is_empty());
     }
-
-    /*#[test]
-    fn list_repo_files() {
-        let repo = gix::open("./repositories/my-super-linux").unwrap();
-        let entries = show_repo_root(&repo).unwrap();
-        for (name, is_dir) in &entries {
-            println!("{} {}", if *is_dir {"dir "} else {"file"}, name);
-        }
-        assert!(!entries.is_empty());
-    }*/
 }

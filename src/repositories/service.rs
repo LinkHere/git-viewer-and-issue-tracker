@@ -26,10 +26,7 @@ pub async fn fetch_all_repos(pool: &SqlitePool) -> Result<Vec<FetchRepos>, AppEr
     .await?)
 }
 
-pub async fn insert_repo(
-    pool: &SqlitePool,
-    payload: NewRepo
-) -> Result<(), AppError> {
+pub async fn insert_repo(pool: &SqlitePool, payload: NewRepo) -> Result<(), AppError> {
     sqlx::query!(
         r#"
         INSERT INTO
@@ -47,13 +44,10 @@ pub async fn insert_repo(
     Ok(())
 }
 
-pub async fn is_repo_exists(
-    pool: &SqlitePool,
-    repo_name: &str
-) -> Result<bool, AppError> {
+pub async fn is_repo_exists(pool: &SqlitePool, repo_name: &str) -> Result<bool, AppError> {
     let exists: i64 = sqlx::query_scalar!(
-    "SELECT COUNT(*) FROM repositories WHERE repo_name = ?1",
-    repo_name
+        "SELECT COUNT(*) FROM repositories WHERE repo_name = ?1",
+        repo_name
     )
     .fetch_one(pool)
     .await?;
@@ -61,10 +55,7 @@ pub async fn is_repo_exists(
     Ok(exists > 0)
 }
 
-pub async fn check_repo_id(
-    pool: &SqlitePool,
-    id: i64
-) -> Result<String, AppError> {
+pub async fn check_repo_id(pool: &SqlitePool, id: i64) -> Result<String, AppError> {
     let repo_name = sqlx::query_scalar!("SELECT repo_name FROM repositories WHERE id = ?", id)
         .fetch_optional(pool)
         .await?

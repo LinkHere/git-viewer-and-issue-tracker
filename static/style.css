@@ -1,0 +1,155 @@
+/*Override sakura's narrow body constraints*/
+body {
+  max-width: none;
+  margin: 0;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+.site-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 16px;
+  align-items: stretch;
+}
+
+.site-header img {
+  display: block;
+  width: 128px;
+  height: 128px;
+}
+
+/* Left block: rows packed together, centered against the image */
+.site-header .info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* was space-between, which caused the gaps */
+}
+
+.site-header .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.site-header h4,
+.site-header .grow {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.site-header .author {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  margin: 0;
+}
+
+.site-header .menu {
+  flex: 0 1 auto;
+  max-width: 40%;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+/* Tight, even spacing around the hr */
+.site-header hr {
+  width: 100%;
+  margin: 0 0;
+}
+
+/*Navigation*/
+/*header nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header nav ul {
+    display: flex;
+    list-style: none;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+}*/
+
+
+/*for code block rendering*/
+/*pre ol {
+    margin: 0;
+    padding-left: 1.2rem;
+}*/
+
+pre li {
+    white-space: pre; /* Keeps internal indentation/spaces intact */
+}
+
+/*Render Blob contents in a code block with line numbering*/
+.blob {
+  overflow-x: auto;
+  border-width: 1px 0 0 0;
+  border-style: solid;
+  border-color: #ccc;
+  border-radius: 0;
+}
+
+.blob-table {
+  width: auto;
+  border-collapse: collapse;
+  margin: 0;
+}
+
+.blob-table td {
+  padding: 0;
+  border: 0;
+  vertical-align: top;
+}
+
+.blob-table td.linenumbers {
+  text-align: right;
+  user-select: none;
+  border: 0;
+  border-right: 1px solid #ccc;
+  border-bottom: 0;
+}
+
+/* Both columns must share identical font and line-height to stay aligned */
+.blob-table pre,
+.blob-table code {
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  background: none;
+  font-family: monospace;
+  font-size: 0.9em;
+  line-height: 1.4;
+  tab-size: 4;
+}
+
+.blob-table pre {
+  padding: 8px 0;
+}
+
+
+.linenumbers a {
+  display: inline-block;
+  padding: 0 10px;
+  color: #888;
+  text-decoration: none;
+}
+
+.linenumbers a:hover {
+  color: inherit;
+}
+
+.lines { width: 100%; }
+.lines pre { padding-left: 12px; padding-right: 12px; }
+
+/* highlight the line targeted by #nNN, like cgit */
+.linenumbers a:target {
+  background: #ffd;
+  color: #000;
+}

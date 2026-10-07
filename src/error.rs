@@ -99,12 +99,8 @@ impl IntoResponse for AppError {
                 "404 Not Found",
                 "The requested page or resource could not be found.".to_string(),
             ),
-            AppError::BadRequest(msg) => {
-                (StatusCode::BAD_REQUEST, "400 Bad Request", msg.clone())
-            }
-            AppError::Conflict(msg) => {
-                (StatusCode::CONFLICT, "409 Conflict", msg.clone())
-            }
+            AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, "400 Bad Request", msg.clone()),
+            AppError::Conflict(msg) => (StatusCode::CONFLICT, "409 Conflict", msg.clone()),
             AppError::Internal(err) => {
                 eprintln!("Internal server error: {err:?}");
                 (
