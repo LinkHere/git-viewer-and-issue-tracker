@@ -27,7 +27,8 @@ impl AppState {
         }
         let ts = gix::ThreadSafeRepository::open(path)?;
         let local = ts.to_thread_local();
-        self.repo_cache.insert(path.to_path_buf(), ts);
+        //self.repo_cache.insert(path.to_path_buf(), ts);
+        self.repo_cache.entry(path.to_path_buf()).or_insert(ts);
         Ok(local)
     }
 }

@@ -91,6 +91,12 @@ impl From<gix::object::try_into::Error> for AppError {
     }
 }
 
+impl From<gix::revision::walk::Error> for AppError {
+    fn from(err: gix::revision::walk::Error) -> Self {
+        Self::Internal(anyhow::Error::from(err))
+    }
+}
+
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, title, message) = match &self {

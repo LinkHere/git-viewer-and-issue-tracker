@@ -34,6 +34,7 @@ pub fn render_repo_subtree_mrkp(repo_id: i64, repo_subtree: &[RepoSubtree]) -> M
             ul {
                 @for tree in repo_subtree {
                     li { a href={ "/"(repo_id)"/tree/"(tree.repo_path)"/"(tree.repo_name)} {(tree.repo_name)}
+                        small {(tree.blob_size)}
                         small {(tree.is_dir)}
                     }
                 }
@@ -48,15 +49,46 @@ pub fn render_repo_files_mrkp(repo_id: i64, repo_entry: RepoContent) -> Markup {
             RepoContent::NoCommits => p { "No Commits Yet!" },
             RepoContent::Empty => p { "Empty Repository" },
             RepoContent::Files(entries) => {
-                ul {
-                    @for entry in entries {
-                        @if entry.is_dir {
-                            li { a href={ "/"(repo_id)"/tree/"(entry.entry_name) } {(entry.entry_name)} "----" small { (entry.is_dir) } }
-                        } @else if entry.is_blob {
-                            li { a href={ "/"(repo_id)"/blob/"(entry.entry_name) } {(entry.entry_name)} "----" small { (entry.is_dir) } }
-                        } @else {
-                            li {(entry.entry_name)}
+                table {
+                    thead{
+                        tr {
+                            th { "Name" }
+                            th { "Size" }
+                            th { "Message" }
+                            th { "Author" }
+                            th { "Last Activity" }
                         }
+                    }
+                    tbody {
+
+                            @for entry in entries {
+                                @if entry.is_dir {
+                                    tr {
+                                        td { a href={ "/"(repo_id)"/tree/"(entry.entry_name) } { (entry.entry_name) } }
+                                        td { "---" }
+                                        td { (entry.commit_hash)": " (entry.commit_message) }
+                                        td { (entry.author_name) }
+                                        td { @if let Some(timestamp) = entry.last_modified { (timestamp) } }
+                                    }
+                                } @else if entry.is_blob {
+                                    tr {
+                                        td { a href={ "/"(repo_id)"/blob/"(entry.entry_name) } {(entry.entry_name)} }
+                                        td { (entry.blob_size) }
+                                        td { (entry.commit_hash)": " (entry.commit_message) }
+                                        td { (entry.author_name) }
+                                        td { @if let Some(timestamp) = entry.last_modified { (timestamp) } }
+                                    }
+                                } @else {
+                                    tr {
+                                        td { (entry.entry_name) }
+                                        td { (entry.blob_size) }
+                                        td { (entry.commit_hash)": " (entry.commit_message) }
+                                        td { (entry.author_name) }
+                                        td { @if let Some(timestamp) = entry.last_modified { (timestamp) } }
+                                    }
+                                }
+                            }
+
                     }
                 }
             },

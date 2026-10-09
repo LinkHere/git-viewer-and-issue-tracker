@@ -18,6 +18,11 @@ pub struct FetchRepos {
 #[derive(Debug)]
 pub struct RepoEntry {
     pub entry_name: String,
+    pub author_name: String,
+    pub commit_message: String,
+    pub commit_hash: String,
+    pub last_modified: Option<String>,
+    pub blob_size: u64,
     pub is_dir: bool,
     pub is_blob: bool,
 }
@@ -27,6 +32,7 @@ pub struct RepoEntry {
 pub struct RepoSubtree {
     pub repo_name: String,
     pub repo_path: String,
+    pub blob_size: u64,
     pub is_dir: bool,
 }
 
