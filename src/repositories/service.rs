@@ -1,4 +1,4 @@
-use super::model::{FetchRepos, NewRepo};
+use super::model::{FetchRepos, NewRepo, NewRepo as RepoNameDesc};
 use crate::common::types;
 use crate::error::AppError;
 use anyhow::Result;
@@ -55,10 +55,14 @@ pub async fn is_repo_exists(pool: &SqlitePool, repo_name: &str) -> Result<bool, 
     Ok(exists > 0)
 }
 
-pub async fn check_repo_id(pool: &SqlitePool, id: i64) -> Result<String, AppError> {
-    let repo_name = sqlx::query_scalar!("SELECT repo_name FROM repositories WHERE id = ?", id)
-        .fetch_optional(pool)
-        .await?
-        .ok_or(AppError::NotFound)?;
-    Ok(repo_name)
+pub async fn check_repo_id(pool: &SqlitePool, id: i64) -> Result<RepoNameDesc, AppError> {
+    let repo = sqlx::query_as!(
+        RepoNameDesc,
+        "SELECT repo_name, repo_description FROM repositories WHERE id = ?",
+        id
+    )
+    .fetch_optional(pool)
+    .await?
+    .ok_or(AppError::NotFound)?;
+    Ok(repo)
 }

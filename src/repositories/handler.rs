@@ -30,8 +30,8 @@ pub async fn read_repo_blob_handler(
     let wrapped_id: Result<Path<i64>, PathRejection> = Ok(Path(repo_id));
     let valid_id = validate_url_id(wrapped_id);
     let repo_id = valid_id?;
-    let repo_name = check_repo_id(&state.pool, repo_id).await?;
-    let repo_path = state.repo_path.join(&repo_name);
+    let repo_name_desc = check_repo_id(&state.pool, repo_id).await?;
+    let repo_path = state.repo_path.join(&repo_name_desc.repo_name);
     let blobcontent = tokio::task::spawn_blocking(move || {
         let repo = state.repo(&repo_path)?;
         read_blob(&repo, &repo_tree_path)
@@ -39,7 +39,11 @@ pub async fn read_repo_blob_handler(
     .await?;
     println!("{:?}", blobcontent);
     let blobc = blobcontent?;
-    Ok(layout("Viewing Code", render_repo_blob_mrkp(&blobc)))
+    Ok(layout(
+        "Viewing Code",
+        (String::from("Hello"), Some(String::from("World"))),
+        render_repo_blob_mrkp(&blobc),
+    ))
 }
 
 #[axum::debug_handler]
@@ -54,8 +58,8 @@ pub async fn list_repo_subtree_handler(
     let wrapped_id: Result<Path<i64>, PathRejection> = Ok(Path(repo_id));
     let valid_id = validate_url_id(wrapped_id);
     let repo_id = valid_id?;
-    let repo_name = check_repo_id(&state.pool, repo_id).await?;
-    let repo_path = state.repo_path.join(&repo_name);
+    let repo_name_desc = check_repo_id(&state.pool, repo_id).await?;
+    let repo_path = state.repo_path.join(&repo_name_desc.repo_name);
     let items = tokio::task::spawn_blocking(move || {
         let repo = state.repo(&repo_path)?;
         fetch_repo_subtree(&repo, &repo_tree_path)
@@ -64,6 +68,7 @@ pub async fn list_repo_subtree_handler(
     println!("{:?}", items);
     Ok(layout(
         "Repo SubTree",
+        (String::from("Hello"), Some(String::from("World"))),
         render_repo_subtree_mrkp(repo_id, &items?),
     ))
 }
@@ -73,8 +78,8 @@ pub async fn list_repo_files_handler(
     id: Result<Path<i64>, PathRejection>,
 ) -> Result<Markup, AppError> {
     let valid_id = validate_url_id(id)?;
-    let repo_name = check_repo_id(&state.pool, valid_id).await?;
-    let repo_path = state.repo_path.join(&repo_name);
+    let repo_name_desc = check_repo_id(&state.pool, valid_id).await?;
+    let repo_path = state.repo_path.join(&repo_name_desc.repo_name);
     let items = tokio::task::spawn_blocking(move || {
         let repo = state.repo(&repo_path)?;
         show_repo_root(&repo)
@@ -83,6 +88,7 @@ pub async fn list_repo_files_handler(
     println!("{:?}", items);
     Ok(layout(
         "Repo Tree",
+        (repo_name_desc.repo_name, repo_name_desc.repo_description),
         render_repo_files_mrkp(valid_id, items?),
     ))
 }
@@ -111,12 +117,20 @@ pub async fn list_all_repos_handler(State(state): State<AppState>) -> Result<Mar
     })
     .await?;
 
-    Ok(layout("Repositories", render_all_repos_mrkp(&repo_with_dt)))
+    Ok(layout(
+        "Repositories",
+        (String::from("Hello"), Some(String::from("World"))),
+        render_all_repos_mrkp(&repo_with_dt),
+    ))
 }
 
 #[axum::debug_handler]
 pub async fn new_repo_handler() -> Markup {
-    layout("Create New Repository", render_new_repo_mrkp())
+    layout(
+        "Create New Repository",
+        (String::from("Hello"), Some(String::from("World"))),
+        render_new_repo_mrkp(),
+    )
 }
 
 #[axum::debug_handler]

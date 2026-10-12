@@ -1,6 +1,10 @@
 use maud::{DOCTYPE, Markup, html};
 
-pub fn layout(page_title: &str, page_content: Markup) -> Markup {
+pub fn layout(
+    page_title: &str,
+    repo_header: (String, Option<String>),
+    page_content: Markup,
+) -> Markup {
     html! {
         (DOCTYPE)
         html lang="en" data-theme="light" {
@@ -15,7 +19,7 @@ pub fn layout(page_title: &str, page_content: Markup) -> Markup {
                 header class="site-header" {
                     div class="info" {
                         div class="row" {
-                            h4 { "Sample repository's name  will go here and it's dynamic" }
+                            h4 { (repo_header.0) }
                             select class="menu" aria-label="Menu" {
                                 option { "main" }
                                 option { "dev" }
@@ -23,7 +27,7 @@ pub fn layout(page_title: &str, page_content: Markup) -> Markup {
                         }
                         hr;
                         div class="row" {
-                            span class="grow" { "Sample of repository's description that can grow." }
+                            span class="grow" { @if let Some(desc) = repo_header.1 { (desc) } @else { "No Description" } }
                             span class="author" { "John Doe" }
                         }
                     }

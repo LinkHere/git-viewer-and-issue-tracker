@@ -19,6 +19,11 @@ pub enum AppError {
     Internal(#[from] anyhow::Error),
 }
 
+impl From<Box<dyn std::error::Error + Send + Sync>> for AppError {
+    fn from(err: Box<dyn std::error::Error + Send + Sync>) -> Self {
+        Self::Internal(anyhow::anyhow!(err))
+    }
+}
 
 impl From<tokio::task::JoinError> for AppError {
     fn from(err: tokio::task::JoinError) -> Self {
@@ -64,6 +69,24 @@ impl From<gix::init::Error> for AppError {
 
 impl From<gix::open::Error> for AppError {
     fn from(err: gix::open::Error) -> Self {
+        Self::Internal(anyhow::Error::from(err))
+    }
+}
+
+impl From<gix::refs::packed::buffer::open::Error> for AppError {
+    fn from(err: gix::refs::packed::buffer::open::Error) -> Self {
+        Self::Internal(anyhow::Error::from(err))
+    }
+}
+
+impl From<gix::reference::iter::init::Error> for AppError {
+    fn from(err: gix::reference::iter::init::Error) -> Self {
+        Self::Internal(anyhow::Error::from(err))
+    }
+}
+
+impl From<gix::reference::peel::Error> for AppError {
+    fn from(err: gix::reference::peel::Error) -> Self {
         Self::Internal(anyhow::Error::from(err))
     }
 }

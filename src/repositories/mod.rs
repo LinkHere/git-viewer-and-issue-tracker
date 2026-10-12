@@ -3,6 +3,7 @@ pub mod handler;
 pub mod helper;
 pub mod model;
 pub mod normalize;
+pub mod orchestrator;
 pub mod service;
 pub mod template;
 

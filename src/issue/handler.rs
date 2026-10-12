@@ -25,6 +25,7 @@ pub async fn list_issue_with_comments_handler(
         get_issue_with_comments(&state.pool, (repo_valid_id, issue_valid_id)).await?;
     Ok(layout(
         "Issue - Comments",
+        (String::from("Hello"), Some(String::from("World"))),
         render_issue_with_comments_mrkp(repo_name, &issue),
     ))
 }
@@ -37,6 +38,7 @@ pub async fn list_repo_issues_handler(
     let (repo_name, issues) = get_repo_issues(&state.pool, valid_id).await?;
     Ok(layout(
         "Repository Issues",
+        (String::from("Hello"), Some(String::from("World"))),
         list_repo_issues_mrkp(repo_name, &issues),
     ))
 }
@@ -46,7 +48,11 @@ pub async fn new_repo_issues_handler(
     State(state): State<AppState>,
 ) -> Result<Markup, AppError> {
     let valid_id = check_repo_exists(validate_url_id(id)?, &state.pool).await?;
-    Ok(layout("New Repo Issue", new_repo_issues_mrkp(valid_id)))
+    Ok(layout(
+        "New Repo Issue",
+        (String::from("Hello"), Some(String::from("World"))),
+        new_repo_issues_mrkp(valid_id),
+    ))
 }
 
 pub async fn insert_repo_issues_handler(
