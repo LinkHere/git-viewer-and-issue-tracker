@@ -19,6 +19,7 @@ pub enum AppError {
     Internal(#[from] anyhow::Error),
 }
 
+
 impl From<tokio::task::JoinError> for AppError {
     fn from(err: tokio::task::JoinError) -> Self {
         Self::Internal(anyhow::Error::from(err))
@@ -85,6 +86,12 @@ impl From<gix::object::commit::Error> for AppError {
     }
 }
 
+impl From<gix::object::find::existing::with_conversion::Error> for AppError {
+    fn from(err: gix::object::find::existing::with_conversion::Error) -> Self {
+        Self::Internal(anyhow::Error::from(err))
+    }
+}
+
 impl From<gix::object::try_into::Error> for AppError {
     fn from(err: gix::object::try_into::Error) -> Self {
         Self::Internal(anyhow::Error::from(err))
@@ -93,6 +100,12 @@ impl From<gix::object::try_into::Error> for AppError {
 
 impl From<gix::revision::walk::Error> for AppError {
     fn from(err: gix::revision::walk::Error) -> Self {
+        Self::Internal(anyhow::Error::from(err))
+    }
+}
+
+impl From<gix::revision::walk::iter::Error> for AppError {
+    fn from(err: gix::revision::walk::iter::Error) -> Self {
         Self::Internal(anyhow::Error::from(err))
     }
 }

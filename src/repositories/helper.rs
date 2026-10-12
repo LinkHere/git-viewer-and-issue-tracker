@@ -6,20 +6,20 @@ use std::fs;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 
-pub fn gix_time_to_human(gix_time: gix::date::Time) -> Option<String> {
-    let seconds = i64::try_from(gix_time.seconds).ok()?;
-    let commit_utc = DateTime::from_timestamp(seconds, 0)?;
-    let now = Utc::now();
-    let duration = now.signed_duration_since(commit_utc);
+pub fn gix_time_to_human(gix_time: gix::date::Time) -> String {
+    let Some(commit_utc) = DateTime::<Utc>::from_timestamp(gix_time.seconds as i64, 0) else {
+        return "unknown".to_string();
+    };
+
+    let duration = Utc::now().signed_duration_since(commit_utc);
 
     if duration.num_seconds() < 10 {
-        return Some("now".to_string());
+        return "now".to_string();
     } else if duration.num_seconds() < 60 {
-        return Some("few secs ago".to_string());
+        return "few secs ago".to_string();
     }
-    
-    let ht = HumanTime::from(duration);
-    Some(ht.to_text_en(Accuracy::Rough, Tense::Past))
+
+    HumanTime::from(duration).to_text_en(Accuracy::Rough, Tense::Past)
 }
 
 fn write_agefile(repo_pathbuf: &Path) -> Result<(), AppError> {

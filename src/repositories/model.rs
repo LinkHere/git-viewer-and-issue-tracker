@@ -21,7 +21,7 @@ pub struct RepoEntry {
     pub author_name: String,
     pub commit_message: String,
     pub commit_hash: String,
-    pub last_modified: Option<String>,
+    pub last_modified: String,
     pub blob_size: u64,
     pub is_dir: bool,
     pub is_blob: bool,

@@ -66,25 +66,25 @@ pub fn render_repo_files_mrkp(repo_id: i64, repo_entry: RepoContent) -> Markup {
                                     tr {
                                         td { a href={ "/"(repo_id)"/tree/"(entry.entry_name) } { (entry.entry_name) } }
                                         td { "---" }
-                                        td { (entry.commit_hash)": " (entry.commit_message) }
+                                        td { (entry.commit_hash)": " small {(entry.commit_message)} }
                                         td { (entry.author_name) }
-                                        td { @if let Some(timestamp) = entry.last_modified { (timestamp) } }
+                                        td { (entry.last_modified) }
                                     }
                                 } @else if entry.is_blob {
                                     tr {
                                         td { a href={ "/"(repo_id)"/blob/"(entry.entry_name) } {(entry.entry_name)} }
                                         td { (entry.blob_size) }
-                                        td { (entry.commit_hash)": " (entry.commit_message) }
+                                        td { (entry.commit_hash)": " small {(entry.commit_message)} }
                                         td { (entry.author_name) }
-                                        td { @if let Some(timestamp) = entry.last_modified { (timestamp) } }
+                                        td { (entry.last_modified) }
                                     }
                                 } @else {
                                     tr {
                                         td { (entry.entry_name) }
                                         td { (entry.blob_size) }
-                                        td { (entry.commit_hash)": " (entry.commit_message) }
+                                        td { (entry.commit_hash)": " small {(entry.commit_message)} }
                                         td { (entry.author_name) }
-                                        td { @if let Some(timestamp) = entry.last_modified { (timestamp) } }
+                                        td { (entry.last_modified) }
                                     }
                                 }
                             }
