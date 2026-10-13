@@ -18,6 +18,22 @@ use maud::Markup;
 use std;
 use std::sync::Arc;
 
+pub async fn list_read_repo_handler(
+    Path((repo_id, mode, repo_tree_path)): Path<(String, String, String)>,
+) -> Result<(), AppError> {
+    match mode.as_str() {
+        "tree" => {
+            println!("This is a tree");
+            Ok(())
+        }
+        "blob" => {
+            println!("This is a blob");
+            Ok(())
+        }
+        _ => Err(AppError::NotFound),
+    }
+}
+
 #[axum::debug_handler]
 pub async fn read_repo_blob_handler(
     State(state): State<AppState>,

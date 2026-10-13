@@ -61,20 +61,22 @@ pub fn render_repo_files_mrkp(repo_id: i64, repo_entry: RepoContent) -> Markup {
                     }
                     tbody {
 
+                        @let mode_tree = "tree";
+                        @let mode_blob = "blob";
                         @for entry in entries {
                             @if entry.is_dir {
                                 tr {
-                                    td { a href={ "/"(repo_id)"/tree/"(entry.entry_name) } { (entry.entry_name) } }
+                                    td { a href={ "/"(repo_id)"/"(mode_tree)"/"(entry.entry_name) } { (entry.entry_name) } }
                                     td { "---" }
-                                    td { (entry.commit_hash)": " small {(entry.commit_message)} }
+                                    td { sup {(entry.commit_hash)} (entry.commit_message) }
                                     td { (entry.author_name) }
                                     td { (entry.last_modified) }
                                 }
                             } @else if entry.is_blob {
                                 tr {
-                                    td { a href={ "/"(repo_id)"/blob/"(entry.entry_name) } {(entry.entry_name)} }
+                                    td { a href={ "/"(repo_id)"/"(mode_blob)"/"(entry.entry_name) } {(entry.entry_name)} }
                                     td { (entry.blob_size) }
-                                    td { (entry.commit_hash)": " small {(entry.commit_message)} }
+                                    td { sup {(entry.commit_hash)}(entry.commit_message)}
                                     td { (entry.author_name) }
                                     td { (entry.last_modified) }
                                 }
