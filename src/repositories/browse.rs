@@ -5,6 +5,10 @@ use crate::error::AppError;
 use anyhow::Result;
 use gix::revision::walk::Sorting;
 use gix::traverse::commit::simple::CommitTimeOrder;
+use syntect::easy::HighlightLines;
+use syntect::highlighting::ThemeSet;
+use syntect::html::{styled_line_to_highlighted_html, IncludeBackground};
+use syntect::parsing::SyntaxSet;
 
 #[derive(Debug)]
 pub enum RepoContent {
@@ -45,7 +49,27 @@ pub fn read_blob(repo: &gix::Repository, path: &str) -> Result<String, AppError>
     } else {
         return Err(AppError::NotFound);
     };
-    Ok(blob_contents)
+
+    let extension = std::path::Path::new(path)
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .unwrap_or("txt");
+    let ss = SyntaxSet::load_defaults_newlines();
+    let ts = ThemeSet::load_defaults();
+    let syntax = ss
+        .find_syntax_by_extension(extension)
+        .or_else(|| ss.find_syntax_by_token(extension))
+        .unwrap_or_else(|| ss.find_syntax_plain_text());
+    let theme = &ts.themes["base16-ocean.light"];
+    let mut highlighters = HighlightLines::new(syntax, theme);
+    
+    let mut html_buffer = String::new();
+    for line in syntect::util::LinesWithEndings::from(&blob_contents) {
+        let regions = highlighters.highlight_line(line, &ss).unwrap();
+        let line_html = styled_line_to_highlighted_html(&regions[..], IncludeBackground::No).unwrap();
+        html_buffer.push_str(&line_html);
+    }
+    Ok(html_buffer)
 }
 
 pub fn fetch_repo_subtree(repo: &gix::Repository, path: &str) -> Result<RepoResource, AppError> {

@@ -1,7 +1,7 @@
 use super::browse::{RepoContent, RepoResource};
 use super::model::FetchRepos;
 use chrono::{DateTime, Utc};
-use maud::{Markup, html};
+use maud::{Markup, PreEscaped, html};
 
 pub fn render_repo_blob_mrkp(blob: &str) -> Markup {
     let count = blob.lines().count();
@@ -18,7 +18,7 @@ pub fn render_repo_blob_mrkp(blob: &str) -> Markup {
                         }
                     }
                     td.lines {
-                        pre { code { (blob) } }
+                        pre { code { (PreEscaped(blob)) } }
                     }
                 }
             }

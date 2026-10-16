@@ -8,7 +8,7 @@ use maud::{DOCTYPE, Markup, html};
 pub enum AppError {
     #[error("{0}")]
     Msg(String),
-    
+
     #[error("404 Not Found")]
     NotFound,
 
@@ -31,6 +31,12 @@ impl AppError {
 impl From<Box<dyn std::error::Error + Send + Sync>> for AppError {
     fn from(err: Box<dyn std::error::Error + Send + Sync>) -> Self {
         Self::Internal(anyhow::anyhow!(err))
+    }
+}
+
+impl From<syntect::Error> for AppError {
+    fn from(err: syntect::Error) -> Self {
+        Self::Internal(anyhow::Error::from(err))
     }
 }
 
@@ -145,11 +151,7 @@ impl From<gix::revision::walk::iter::Error> for AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, title, message) = match &self {
-            AppError::Msg(msg) => (
-                StatusCode::INTERNAL_SERVER_ERROR, 
-                "Error", 
-                msg.clone()
-            ),
+            AppError::Msg(msg) => (StatusCode::INTERNAL_SERVER_ERROR, "Error", msg.clone()),
             AppError::NotFound => (
                 StatusCode::NOT_FOUND,
                 "404 Not Found",

@@ -67,61 +67,6 @@ pub async fn list_repo_contents_handler(
     .await?
 }
 
-// #[axum::debug_handler]
-// pub async fn read_repo_blob_handler(
-//     State(state): State<AppState>,
-//     params: Result<Path<ReadBlobParams>, PathRejection>,
-// ) -> Result<Markup, AppError> {
-//     let Path(SubtreeParams {
-//         repo_id,
-//         repo_tree_path,
-//     }) = params?;
-//     let wrapped_id: Result<Path<i64>, PathRejection> = Ok(Path(repo_id));
-//     let valid_id = validate_url_id(wrapped_id);
-//     let repo_id = valid_id?;
-//     let repo_name_desc = check_repo_id(&state.pool, repo_id).await?;
-//     let repo_path = state.repo_path.join(&repo_name_desc.repo_name);
-//     let blobcontent = tokio::task::spawn_blocking(move || {
-//         let repo = state.repo(&repo_path)?;
-//         read_blob(&repo, &repo_tree_path)
-//     })
-//     .await?;
-//     println!("{:?}", blobcontent);
-//     let blobc = blobcontent?;
-//     Ok(layout(
-//         "Viewing Code",
-//         (String::from("Hello"), Some(String::from("World"))),
-//         render_repo_blob_mrkp(&blobc),
-//     ))
-// }
-
-// #[axum::debug_handler]
-// pub async fn list_repo_subtree_handler(
-//     State(state): State<AppState>,
-//     params: Result<Path<SubtreeParams>, PathRejection>,
-// ) -> Result<Markup, AppError> {
-//     let Path(SubtreeParams {
-//         repo_id,
-//         repo_tree_path,
-//     }) = params?;
-//     let wrapped_id: Result<Path<i64>, PathRejection> = Ok(Path(repo_id));
-//     let valid_id = validate_url_id(wrapped_id);
-//     let repo_id = valid_id?;
-//     let repo_name_desc = check_repo_id(&state.pool, repo_id).await?;
-//     let repo_path = state.repo_path.join(&repo_name_desc.repo_name);
-//     let items = tokio::task::spawn_blocking(move || {
-//         let repo = state.repo(&repo_path)?;
-//         fetch_repo_subtree(&repo, &repo_tree_path)
-//     })
-//     .await?;
-//     println!("{:?}", items);
-//     Ok(layout(
-//         "Repo SubTree",
-//         (String::from("Hello"), Some(String::from("World"))),
-//         render_repo_subtree_mrkp(repo_id, &items?),
-//     ))
-// }
-
 pub async fn list_repo_files_handler(
     State(state): State<AppState>,
     id: Result<Path<i64>, PathRejection>,
