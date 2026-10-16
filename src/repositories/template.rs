@@ -41,8 +41,12 @@ pub fn render_repo_subtree_mrkp(repo_id: i64, repo_sub: &RepoResource) -> Markup
         //     }
         // }
         @match repo_sub {
-            RepoSource::ATree => {
-                p {"A Tree"}
+            RepoSource::ATree(tree_list) => {
+                @for tree in tree_list {
+                    small {(tree.repo_name)} br;
+                    small {(tree.blob_size)} br;
+                    small {(tree.is_dir)}
+                }
             }
             RepoSource::AFile => {
                 p {"Parse File"}
