@@ -53,12 +53,12 @@ pub fn fetch_repo_subtree(
     };
     let root_tree = commit.tree()?;
 
-    let target_tree = if let Some(entry) = root_tree.lookup_entry_by_path(tree_path)? {
+    let target_tree = if let Some(entry) = root_tree.lookup_entry_by_path(&tree_path)? {
         if entry.mode().is_tree() {
             let obj = repo.find_object(entry.oid())?;
             obj.try_into_tree()?
         } else {
-            return Err(AppError::NotFound);
+            return Err(AppError::msg("Mode is blob"));
         }
     } else {
         return Err(AppError::NotFound);
@@ -81,7 +81,20 @@ pub fn fetch_repo_subtree(
             is_dir: entry.mode().is_tree(),
         });
     }
-    println!("BASE PATH: {}", path);
+
+    // let b = if let Some(blob_entry) = root_tree.lookup_entry_by_path(tree_path)? {
+    //     if blob_entry.mode().is_blob() {
+    //         // let blob = repo.find_blob(blob_entry.oid()).unwrap();
+    //         // String::from_utf8_lossy(&blob.data).into_owned()i
+    //         String::from("It is a blob")
+    //     } else {
+    //         String::from("String for now")
+    //     }
+    // } else {
+    //     String::from("Error for now")
+    // };
+    // println!("{}", b);
+    println!("BASE PATH: {}", tree_path);
     Ok(files)
 }
 

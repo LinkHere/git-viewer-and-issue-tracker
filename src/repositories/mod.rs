@@ -20,7 +20,7 @@ pub fn routes() -> Router<AppState> {
         .route("/{repo_id}", get(handler::list_repo_files_handler))
         .route(
             "/{repo_id}/{mode}/{*repo_tree_path}",
-            get(handler::list_read_repo_handler),
+            get(handler::list_repo_contents_handler),
         )
         // .route(
         //     "/{repo_id}/{mode_blob}/{*repo_tree_path}",

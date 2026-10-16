@@ -39,5 +39,6 @@ pub struct RepoSubtree {
 #[derive(Deserialize, Debug)]
 pub struct SubtreeParams {
     pub repo_id: i64,
+    pub mode: String,
     pub repo_tree_path: String,
 }

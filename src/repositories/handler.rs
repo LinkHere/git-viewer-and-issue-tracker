@@ -18,29 +18,18 @@ use maud::Markup;
 use std;
 use std::sync::Arc;
 
-pub async fn list_read_repo_handler(
-    Path((repo_id, mode, repo_tree_path)): Path<(String, String, String)>,
-) -> Result<(), AppError> {
-    match mode.as_str() {
-        "tree" => {
-            println!("This is a tree");
-            Ok(())
-        }
-        "blob" => {
-            println!("This is a blob");
-            Ok(())
-        }
-        _ => Err(AppError::NotFound),
-    }
+enum Mode {
+    Tree,
+    Blob,
 }
 
-#[axum::debug_handler]
-pub async fn read_repo_blob_handler(
+pub async fn list_repo_contents_handler(
     State(state): State<AppState>,
-    params: Result<Path<ReadBlobParams>, PathRejection>,
+    params: Result<Path<SubtreeParams>, PathRejection>
 ) -> Result<Markup, AppError> {
     let Path(SubtreeParams {
         repo_id,
+        mode,
         repo_tree_path,
     }) = params?;
     let wrapped_id: Result<Path<i64>, PathRejection> = Ok(Path(repo_id));
@@ -48,46 +37,90 @@ pub async fn read_repo_blob_handler(
     let repo_id = valid_id?;
     let repo_name_desc = check_repo_id(&state.pool, repo_id).await?;
     let repo_path = state.repo_path.join(&repo_name_desc.repo_name);
-    let blobcontent = tokio::task::spawn_blocking(move || {
+    let tree_blob_mode = match mode.as_str() {
+        "tree" => Mode::Tree,
+        "blob" => Mode::Blob,
+        _ => return Err(AppError::NotFound),
+    };
+    tokio::task::spawn_blocking(move || {
         let repo = state.repo(&repo_path)?;
-        read_blob(&repo, &repo_tree_path)
+        match tree_blob_mode {
+            Mode::Tree => {
+                let repo_tree = fetch_repo_subtree(&repo, &repo_tree_path);
+                println!("Repo Tree Path: {:?}", repo_tree_path);
+                Ok(layout(
+                    "Repo SubTree",
+                    (String::from("Hello"), Some(String::from("World"))),
+                    render_repo_subtree_mrkp(repo_id, &repo_tree?),
+                ))
+            }
+            Mode::Blob => {
+                let repo_blob = read_blob(&repo, &repo_tree_path);
+                Ok(layout(
+                    "Viewing Code",
+                    (String::from("Hello"), Some(String::from("World"))),
+                    render_repo_blob_mrkp(&repo_blob?),
+                ))
+            }
+        }
     })
-    .await?;
-    println!("{:?}", blobcontent);
-    let blobc = blobcontent?;
-    Ok(layout(
-        "Viewing Code",
-        (String::from("Hello"), Some(String::from("World"))),
-        render_repo_blob_mrkp(&blobc),
-    ))
+    .await?
 }
 
-#[axum::debug_handler]
-pub async fn list_repo_subtree_handler(
-    State(state): State<AppState>,
-    params: Result<Path<SubtreeParams>, PathRejection>,
-) -> Result<Markup, AppError> {
-    let Path(SubtreeParams {
-        repo_id,
-        repo_tree_path,
-    }) = params?;
-    let wrapped_id: Result<Path<i64>, PathRejection> = Ok(Path(repo_id));
-    let valid_id = validate_url_id(wrapped_id);
-    let repo_id = valid_id?;
-    let repo_name_desc = check_repo_id(&state.pool, repo_id).await?;
-    let repo_path = state.repo_path.join(&repo_name_desc.repo_name);
-    let items = tokio::task::spawn_blocking(move || {
-        let repo = state.repo(&repo_path)?;
-        fetch_repo_subtree(&repo, &repo_tree_path)
-    })
-    .await?;
-    println!("{:?}", items);
-    Ok(layout(
-        "Repo SubTree",
-        (String::from("Hello"), Some(String::from("World"))),
-        render_repo_subtree_mrkp(repo_id, &items?),
-    ))
-}
+// #[axum::debug_handler]
+// pub async fn read_repo_blob_handler(
+//     State(state): State<AppState>,
+//     params: Result<Path<ReadBlobParams>, PathRejection>,
+// ) -> Result<Markup, AppError> {
+//     let Path(SubtreeParams {
+//         repo_id,
+//         repo_tree_path,
+//     }) = params?;
+//     let wrapped_id: Result<Path<i64>, PathRejection> = Ok(Path(repo_id));
+//     let valid_id = validate_url_id(wrapped_id);
+//     let repo_id = valid_id?;
+//     let repo_name_desc = check_repo_id(&state.pool, repo_id).await?;
+//     let repo_path = state.repo_path.join(&repo_name_desc.repo_name);
+//     let blobcontent = tokio::task::spawn_blocking(move || {
+//         let repo = state.repo(&repo_path)?;
+//         read_blob(&repo, &repo_tree_path)
+//     })
+//     .await?;
+//     println!("{:?}", blobcontent);
+//     let blobc = blobcontent?;
+//     Ok(layout(
+//         "Viewing Code",
+//         (String::from("Hello"), Some(String::from("World"))),
+//         render_repo_blob_mrkp(&blobc),
+//     ))
+// }
+
+// #[axum::debug_handler]
+// pub async fn list_repo_subtree_handler(
+//     State(state): State<AppState>,
+//     params: Result<Path<SubtreeParams>, PathRejection>,
+// ) -> Result<Markup, AppError> {
+//     let Path(SubtreeParams {
+//         repo_id,
+//         repo_tree_path,
+//     }) = params?;
+//     let wrapped_id: Result<Path<i64>, PathRejection> = Ok(Path(repo_id));
+//     let valid_id = validate_url_id(wrapped_id);
+//     let repo_id = valid_id?;
+//     let repo_name_desc = check_repo_id(&state.pool, repo_id).await?;
+//     let repo_path = state.repo_path.join(&repo_name_desc.repo_name);
+//     let items = tokio::task::spawn_blocking(move || {
+//         let repo = state.repo(&repo_path)?;
+//         fetch_repo_subtree(&repo, &repo_tree_path)
+//     })
+//     .await?;
+//     println!("{:?}", items);
+//     Ok(layout(
+//         "Repo SubTree",
+//         (String::from("Hello"), Some(String::from("World"))),
+//         render_repo_subtree_mrkp(repo_id, &items?),
+//     ))
+// }
 
 pub async fn list_repo_files_handler(
     State(state): State<AppState>,
@@ -101,7 +134,7 @@ pub async fn list_repo_files_handler(
         show_repo_root(&repo)
     })
     .await?;
-    println!("{:?}", items);
+    //println!("{:?}", items);
     Ok(layout(
         "Repo Tree",
         (repo_name_desc.repo_name, repo_name_desc.repo_description),
