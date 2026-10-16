@@ -1,4 +1,4 @@
-use super::browse::RepoContent;
+use super::browse::{RepoContent, RepoSource};
 use super::model::{FetchRepos, RepoSubtree};
 use chrono::{DateTime, Utc};
 use maud::{Markup, html};
@@ -26,19 +26,28 @@ pub fn render_repo_blob_mrkp(blob: &str) -> Markup {
     }
 }
 
-pub fn render_repo_subtree_mrkp(repo_id: i64, repo_subtree: &[RepoSubtree]) -> Markup {
+pub fn render_repo_subtree_mrkp(repo_id: i64, repo_sub: &RepoResource) -> Markup {
     html! {
-        @if repo_subtree.is_empty() {
-            ul { li { "Empty Directory!" } }
-        } @else {
-            ul {
-                @for tree in repo_subtree {
-                    li { a href={ "/"(repo_id)"/tree/"(tree.repo_path)"/"(tree.repo_name)} {(tree.repo_name)}
-                        small {(tree.blob_size)}
-                        small {(tree.is_dir)}
-                    }
-                }
+        // @if repo_subtree.is_empty() {
+        //     ul { li { "Empty Directory!" } }
+        // } @else {
+        //     ul {
+        //         @for tree in repo_subtree {
+        //             li { a href={ "/"(repo_id)"/tree/"(tree.repo_path)"/"(tree.repo_name)} {(tree.repo_name)}
+        //                 small {(tree.blob_size)}
+        //                 small {(tree.is_dir)}
+        //             }
+        //         }
+        //     }
+        // }
+        @match repo_sub {
+            RepoSource::ATree => {
+                p {"A Tree"}
             }
+            RepoSource::AFile => {
+                p {"Parse File"}
+            }
+            _ => p {"Unknown"}
         }
     }
 }
