@@ -6,6 +6,9 @@ use maud::{DOCTYPE, Markup, html};
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
+    #[error("{0}")]
+    Msg(String),
+    
     #[error("404 Not Found")]
     NotFound,
 
@@ -17,6 +20,12 @@ pub enum AppError {
 
     #[error("500 Internal Server Error: {0}")]
     Internal(#[from] anyhow::Error),
+}
+
+impl AppError {
+    pub fn msg<S: Into<String>>(message: S) -> Self {
+        AppError::Msg(message.into())
+    }
 }
 
 impl From<Box<dyn std::error::Error + Send + Sync>> for AppError {
@@ -136,6 +145,11 @@ impl From<gix::revision::walk::iter::Error> for AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, title, message) = match &self {
+            AppError::Msg(msg) => (
+                StatusCode::INTERNAL_SERVER_ERROR, 
+                "Error", 
+                msg.clone()
+            ),
             AppError::NotFound => (
                 StatusCode::NOT_FOUND,
                 "404 Not Found",
