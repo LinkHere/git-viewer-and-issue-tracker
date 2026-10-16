@@ -1,6 +1,6 @@
 use super::browse::{fetch_repo_subtree, read_blob, show_repo_root};
 use super::helper;
-use super::model::{NewRepo, SubtreeParams, SubtreeParams as ReadBlobParams};
+use super::model::{NewRepo, SubtreeParams};
 use super::service::{check_repo_id, fetch_all_repos, insert_repo, is_repo_exists};
 use super::template::{
     render_all_repos_mrkp, render_new_repo_mrkp, render_repo_blob_mrkp, render_repo_files_mrkp,
@@ -25,7 +25,7 @@ enum Mode {
 
 pub async fn list_repo_contents_handler(
     State(state): State<AppState>,
-    params: Result<Path<SubtreeParams>, PathRejection>
+    params: Result<Path<SubtreeParams>, PathRejection>,
 ) -> Result<Markup, AppError> {
     let Path(SubtreeParams {
         repo_id,

@@ -13,6 +13,16 @@ pub enum RepoContent {
     Files(Vec<RepoEntry>),
 }
 
+#[derive(Debug)]
+pub enum RepoResource {
+    ATree(Vec<RepoSubtree>),
+    AFile {
+        name: String,
+        content: String,
+        size: u64,
+    },
+}
+
 pub fn read_blob(repo: &gix::Repository, path: &str) -> Result<String, AppError> {
     let tree_path = path.trim_matches('/');
     if tree_path.is_empty() {
@@ -38,10 +48,7 @@ pub fn read_blob(repo: &gix::Repository, path: &str) -> Result<String, AppError>
     Ok(blob_contents)
 }
 
-pub fn fetch_repo_subtree(
-    repo: &gix::Repository,
-    path: &str,
-) -> Result<Vec<RepoSubtree>, AppError> {
+pub fn fetch_repo_subtree(repo: &gix::Repository, path: &str) -> Result<RepoResource, AppError> {
     let tree_path = path.trim_matches('/');
     if tree_path.is_empty() {
         return Err(AppError::NotFound);
@@ -53,49 +60,48 @@ pub fn fetch_repo_subtree(
     };
     let root_tree = commit.tree()?;
 
-    let target_tree = if let Some(entry) = root_tree.lookup_entry_by_path(&tree_path)? {
-        if entry.mode().is_tree() {
-            let obj = repo.find_object(entry.oid())?;
-            obj.try_into_tree()?
-        } else {
-            return Err(AppError::msg("Mode is blob"));
+    let entry = root_tree
+        .lookup_entry_by_path(std::path::Path::new(tree_path))?
+        .ok_or(AppError::NotFound)?;
+
+    let obj = repo.find_object(entry.oid())?;
+
+    match obj.kind {
+        gix::object::Kind::Tree => {
+            let target_tree = obj.try_into_tree()?;
+            let mut files = Vec::new();
+            for entry in target_tree.iter() {
+                let entry = entry?;
+                let filename = entry.filename().to_string();
+
+                let blob_size = if entry.mode().is_blob() {
+                    let header = repo.find_header(entry.id())?;
+                    header.size()
+                } else {
+                    0
+                };
+
+                files.push(RepoSubtree {
+                    repo_name: filename,
+                    repo_path: tree_path.to_string(),
+                    blob_size: blob_size,
+                    is_dir: entry.mode().is_tree(),
+                });
+            }
+            Ok(RepoResource::ATree(files))
         }
-    } else {
-        return Err(AppError::NotFound);
-    };
-
-    let mut files = Vec::new();
-    for entry in target_tree.iter() {
-        let entry = entry?;
-        let filename = entry.filename().to_string();
-        let blob_size = if entry.mode().is_blob() {
-            let header = repo.find_header(entry.id())?;
-            header.size()
-        } else {
-            0
-        };
-        files.push(RepoSubtree {
-            repo_name: filename,
-            repo_path: tree_path.to_string(),
-            blob_size: blob_size,
-            is_dir: entry.mode().is_tree(),
-        });
+        gix::objs::Kind::Blob => {
+            let blob = obj.try_into_blob()?;
+            let filename = entry.filename().to_string();
+            let size = blob.data.len() as u64;
+            Ok(RepoResource::AFile {
+                name: filename,
+                content: String::from_utf8_lossy(&blob.data).into_owned(),
+                size,
+            })
+        }
+        _ => return Err(AppError::NotFound),
     }
-
-    // let b = if let Some(blob_entry) = root_tree.lookup_entry_by_path(tree_path)? {
-    //     if blob_entry.mode().is_blob() {
-    //         // let blob = repo.find_blob(blob_entry.oid()).unwrap();
-    //         // String::from_utf8_lossy(&blob.data).into_owned()i
-    //         String::from("It is a blob")
-    //     } else {
-    //         String::from("String for now")
-    //     }
-    // } else {
-    //     String::from("Error for now")
-    // };
-    // println!("{}", b);
-    println!("BASE PATH: {}", tree_path);
-    Ok(files)
 }
 
 pub fn show_repo_root(repo: &gix::Repository) -> Result<RepoContent, AppError> {

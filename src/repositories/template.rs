@@ -1,5 +1,5 @@
-use super::browse::{RepoContent, RepoSource};
-use super::model::{FetchRepos, RepoSubtree};
+use super::browse::{RepoContent, RepoResource};
+use super::model::FetchRepos;
 use chrono::{DateTime, Utc};
 use maud::{Markup, html};
 
@@ -28,30 +28,52 @@ pub fn render_repo_blob_mrkp(blob: &str) -> Markup {
 
 pub fn render_repo_subtree_mrkp(repo_id: i64, repo_sub: &RepoResource) -> Markup {
     html! {
-        // @if repo_subtree.is_empty() {
-        //     ul { li { "Empty Directory!" } }
-        // } @else {
-        //     ul {
-        //         @for tree in repo_subtree {
-        //             li { a href={ "/"(repo_id)"/tree/"(tree.repo_path)"/"(tree.repo_name)} {(tree.repo_name)}
-        //                 small {(tree.blob_size)}
-        //                 small {(tree.is_dir)}
-        //             }
-        //         }
-        //     }
-        // }
         @match repo_sub {
-            RepoSource::ATree(tree_list) => {
-                @for tree in tree_list {
-                    small {(tree.repo_name)} br;
-                    small {(tree.blob_size)} br;
-                    small {(tree.is_dir)}
+            RepoResource::ATree(tree_list) => {
+                table {
+                    th {
+                        tr {
+                            th {"Name"}
+                            th {"Size"}
+                            th {"Message"}
+                            th {"Author"}
+                            th {"Activity"}
+                        }
+                    }
+                    tbody {
+                        @for tree in tree_list {
+                            tr {
+                                td { a href={"/"(repo_id)"/tree/"(tree.repo_path)"/"(tree.repo_name)} {(tree.repo_name)}}
+                                td {(tree.blob_size)}
+                                td {(tree.is_dir)}
+                                td {"Tippo"}
+                                td {"Long Time Ago"}
+                            }
+                        }
+                    }
                 }
             }
-            RepoSource::AFile => {
-                p {"Parse File"}
+            RepoResource::AFile {name, content, size} => {
+                @let count = content.lines().count();
+                small {(name) " " (size)}
+                div.blob {
+                    table.blob-table {
+                        tr {
+                            td.linenumbers {
+                                pre {
+                                    @for n in 1..=count {
+                                        a id=(format!("n{n}")) href=(format!("#n{n}")) { (n) }
+                                        "\n"
+                                    }
+                                }
+                            }
+                            td.lines {
+                                pre { code { (content) } }
+                            }
+                        }
+                    }
+                }
             }
-            _ => p {"Unknown"}
         }
     }
 }
@@ -69,7 +91,7 @@ pub fn render_repo_files_mrkp(repo_id: i64, repo_entry: RepoContent) -> Markup {
                             th { "Size" }
                             th { "Message" }
                             th { "Author" }
-                            th { "Last Activity" }
+                            th { "Activity" }
                         }
                     }
                     tbody {
@@ -81,7 +103,7 @@ pub fn render_repo_files_mrkp(repo_id: i64, repo_entry: RepoContent) -> Markup {
                                 tr {
                                     td { a href={ "/"(repo_id)"/"(mode_tree)"/"(entry.entry_name) } { (entry.entry_name) } }
                                     td { "---" }
-                                    td { sup {(entry.commit_hash)} (entry.commit_message) }
+                                    td { sup {(entry.commit_hash)} " " (entry.commit_message) }
                                     td { (entry.author_name) }
                                     td { (entry.last_modified) }
                                 }
@@ -89,7 +111,7 @@ pub fn render_repo_files_mrkp(repo_id: i64, repo_entry: RepoContent) -> Markup {
                                 tr {
                                     td { a href={ "/"(repo_id)"/"(mode_blob)"/"(entry.entry_name) } {(entry.entry_name)} }
                                     td { (entry.blob_size) }
-                                    td { sup {(entry.commit_hash)}(entry.commit_message)}
+                                    td { sup {(entry.commit_hash)} " " (entry.commit_message)}
                                     td { (entry.author_name) }
                                     td { (entry.last_modified) }
                                 }
